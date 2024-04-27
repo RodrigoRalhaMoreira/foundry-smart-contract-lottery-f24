@@ -1,3 +1,27 @@
+// Layout of Contract:
+// version
+// imports
+// errors
+// interfaces, libraries, contracts
+// Type declarations
+// State variables
+// Events
+// Modifiers
+// Functions
+
+// Layout of Functions:
+// constructor
+// receive function (if exists)
+// fallback function (if exists)
+// external
+// public
+// internal
+// private
+// internal & private view & pure functions
+// external & public view & pure functions
+
+
+
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.18;
@@ -9,31 +33,38 @@ pragma solidity ^0.8.18;
  * @dev Implements ChainLink VRFv2
  */
 contract Raffle {
-
     error Raffle__NotEnoughEthSent();
 
+    uint256 private immutable i_entranceFee;
+    // @dev duration of the lottery in seconds
+    uint256 private immutable i_interval;
+    address payable[] private s_players;
+    uint256 private s_lastTimeStamp;
+
+    /** Events */
     event Raffle__Entered(address indexed player_address);
 
-    uint256 private immutable s_entranceFee;
-    address payable[] private s_players;
-
-    constructor(uint256 entranceFee) {
-        s_entranceFee = entranceFee;
+    constructor(uint256 entranceFee, uint256 interval) {
+        i_entranceFee = entranceFee;
+        i_interval = interval;
+        s_lastTimeStamp = block.timestamp;
     }
     function enterRaffle() external payable {
-        if (msg.value < s_entranceFee) {
+        if (msg.value < i_entranceFee) {
             revert Raffle__NotEnoughEthSent();
         }
         s_players.push(payable(msg.sender));
         emit Raffle__Entered(msg.sender);
     }
 
-    function pickWinner() public {
-        // Pick the winner
+    function pickWinner() external {
+        if ((block.timestamp - s_lastTimeStamp) < i_interval) {
+            revert();
+        }
     }
 
     /** Getter Functions */
     function getEntranceFee() public view returns (uint256) {
-        return s_entranceFee;
+        return i_entranceFee;
     }
 }
